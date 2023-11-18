@@ -1,43 +1,42 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: dataexplore
+version: '0.13.0'
+#version-script: git describe --abbrev=1 --tags
+summary: data plotting and analysis package
+description: |
+  DataExplore is an open source desktop application for data analysis and plotting
+  intended for use in both research and education. The program allows quick
+  visualization of data, table manipulation tools and supports large data tables.
 
-on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["main"]
+base: core18
+grade: stable
+confinement: strict
+icon: img/logo.png
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+apps:
+  dataexplore:
+    command: desktop-launch $SNAP/bin/dataexplore
+    plugs: [desktop,desktop-legacy,unity7,home]
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+parts:
+  dataexplore:
+    plugin: python
+    source: .
+    stage-packages:
+      [python3-tk,xsel,fontconfig-config,fonts-freefont-ttf,ttf-ubuntu-font-family,
+      fonts-liberation,ttf-dejavu-core,ttf-mscorefonts-installer]
+    after: [desktop-glib-only]
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  desktop-glib-only:
+      source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+      source-subdir: glib-only
+      plugin: make
+      build-packages:
+        - libglib2.0-dev
+      stage-packages:
+        - libglib2.0-bin
 
-jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          # Upload entire repository
-          path: '.'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+layout:
+  /usr/share/tcltk:
+    bind: $SNAP/usr/share/tcltk
+  /usr/lib/tcltk:
+    bind: $SNAP/usr/lib/tcltk
